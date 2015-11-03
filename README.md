@@ -1,3 +1,8 @@
 # Draggable and grouping able data grid
 
-Try the mockup there
+Try the mockup there: [davidmenger.github.io/grouping-grid](http://davidmenger.github.io/grouping-grid/)
+
+## Was made using
+
+- can.js
+- jquery
