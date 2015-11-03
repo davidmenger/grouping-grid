@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content ="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Game - storyous</title>
+    <link rel="stylesheet" type="text/css" href="css/main.css">
+    <script src="js/vendor/jquery-latest.min.js"></script>
+    <script src="js/vendor/can.custom.js"></script>
+    <script src="js/app.js"></script>
+</head>
+<body>
+
+
+    <!-- YOUR CODE HERE -->
+    <div id="content"></div>
+
+    <!-- PUT ANY TEMPLATES YOU NEED HERE -->
+    <script id="main-template" type="text/stache">
+        <h1>Storyous tic-tac-toe test</h1>
+        <dg-table></dg-table>
+    </script>
+
+    <script id="table-template" type="text/stache">
+        <div class="table">
+            {{#each categories}}
+                <div class="tr category" can-drag-ended="dragEnded" >
+                    <div class="td">{{name}}</div><div class="td"></div>
+                </div>
+                {{#each items}}
+                    <div class="tr {{#if isGroup}}group{{else}}item{{/if}}" can-drag-ended="dragEnded" can-drag-started="dragStarted">
+                        {{#if isGroup}}
+                            <div class="td">{{name}}</div><div class="td"></div>
+                        {{else}}
+                            <div class="td">{{name}}</div>
+                            <div class="td">{{price}}</div>
+                        {{/if}}
+                    </div>
+                    {{#each subitems}}
+                        <div class="tr item subitem" can-drag-ended="dragEnded" can-drag-started="dragStarted">
+                            <div class="td">{{name}}</div>
+                            <div class="td">{{price}}</div>
+                        </div>
+                    {{/each}}
+                {{/each}}
+            {{/each}}
+        </div>
+    </script>
+
+    
+</body>
+</html>
+
