@@ -166,8 +166,8 @@ Mover.prototype = {
 
             this._offset = {
                 containerTop: containerOffset.top,
-                x: event.clientX - ( ( elementOffset.left - containerOffset.left ) - document.documentElement.scrollLeft),
-                y: event.clientY - ( ( elementOffset.top - containerOffset.top ) - document.documentElement.scrollTop),
+                x: event.clientX - ( ( elementOffset.left - containerOffset.left ) - this._getScrollLeft()),
+                y: event.clientY - ( ( elementOffset.top - containerOffset.top ) - this._getScrollTop()),
             };
 
             var containerWidth = this.$container.width();
@@ -184,11 +184,11 @@ Mover.prototype = {
             this.$element.trigger('drag-started', { he: 1 });
         }
 
-        var absCursorY = event.clientY + document.documentElement.scrollTop - this._offset.y;
+        var absCursorY = event.clientY + this._getScrollTop() - this._offset.y;
 
         this._movingContainer.css({
             top: absCursorY + 'px',
-            left: ( event.clientX + document.documentElement.scrollLeft - this._offset.x) + 'px'
+            left: ( event.clientX + - this._getScrollLeft() - this._offset.x) + 'px'
         });
 
         this._processCurrentCoordinate(absCursorY);
@@ -203,12 +203,12 @@ Mover.prototype = {
             var $fireAt = $beforePlaceholder;
             var mergeWith = false;
 
-            if ($fireAt.is(this._movingContainer) || (this._mergeWith !== null && this._mergeWith.is(this._movingContainer))) {
-                $fireAt = this.$element;
-            } else if (this._mergeWith !== null) {
+            if (this._mergeWith !== null) {
                 $fireAt = this._mergeWith;
                 mergeWith = true;
 
+            } else if ($fireAt.is(this._movingContainer)) {
+                $fireAt = this.$element;
             } else if (this._placeholderAtBottomOfGroup && this._selectedGroupHeader === null) {
                 // put it after the group
 
@@ -271,14 +271,6 @@ Mover.prototype = {
             }
 
             // just when there is last groupped item at top of placeholder
-            console.log('condition', {
-                atBottom: this._placeholderAtBottomOfGroup,
-                top: top,
-                firstCondition: ($sibling.isPlaceholder && relativePosition >= 0.5),
-                secondCondition: !$sibling.isPlaceholder && !movePlaceHolder,
-                atInitial: this._atInitialPosition,
-                wasInState: this._selectedGroupHeader !== null
-            })
             if (this._placeholderAtBottomOfGroup && top && (($sibling.isPlaceholder && relativePosition >= 0.5) || (!$sibling.isPlaceholder && !movePlaceHolder) || this._atInitialPosition)) {
                 this._toggleGroupSelection($under);
             } else if (this._placeholderAtBottomOfGroup) {
@@ -309,7 +301,10 @@ Mover.prototype = {
             $mergeWith = $sibling;
         }
 
-        var notAGroup = !$mergeWith.isSubItem && !$mergeWith.isGroup && !$mergeWith.hasClass('category');
+        var notAGroup = !$mergeWith.isSubItem
+            && !$mergeWith.isGroup
+            && !$mergeWith.hasClass('category')
+            && !$mergeWith.isPlaceholder;
 
         if (notAGroup
                 && (this._mergeWith === null || this._mergeWith[0] != $mergeWith[0])) {
@@ -319,6 +314,7 @@ Mover.prototype = {
             }
             $mergeWith.addClass('merge');
             this._mergeWith = $mergeWith;
+            console.log('set mergeWith', $mergeWith);
         }
 
         return $mergeWith;
@@ -400,8 +396,16 @@ Mover.prototype = {
         }
     },
 
+    _getScrollTop: function () {
+        return document.documentElement.scrollTop || document.body.scrollTop;
+    },
+
+    _getScrollLeft: function () {
+        return document.documentElement.scrollLeft || document.body.scrollLeft;
+    },
+
     _getTrUnderCoordinate: function (y) {
-        var y = y + this._offset.containerTop - document.documentElement.scrollTop;
+        var y = y + this._offset.containerTop - this._getScrollTop();
         var $elem = can.$( document.elementFromPoint( this._containerBounds.xAxis, y ) );
         return this._fillMetaInfo( $elem.closest('.tr', this.$container) );
     },
@@ -510,6 +514,12 @@ $(document).ready(function () {
 
             dragEnded: function (item, $elem, event, data) {
                 if (this._movedEntity !== null) {
+
+                    if (this._movedEntity === item) {
+                        this._movedEntity = null;
+                        return;
+                    }
+
                     this._removeItemFromOldPlace(this._movedEntity);
                     var movedFromGroup = this._movedEntity.group;
 
@@ -531,6 +541,7 @@ $(document).ready(function () {
                             group = data.isInGroup ? item.group : null;
                             afterItem = !data.isInGroup && item.group ? item.group : item;
                         }
+
 
                         this._moveItem(this._movedEntity, category, group, afterItem);
                     }
@@ -598,7 +609,17 @@ $(document).ready(function () {
                 var whereToPut = afterItem ? (toList.indexOf(afterItem) + 1) : 0;
                 toList.splice(whereToPut, 0, item);
 
-                item.attr('category', toCategory);
+                if (item.category !== toCategory) {
+                    item.attr('category', toCategory);
+
+                    if (item.subitems) {
+                        item.subitems.forEach(function (subitem) {
+                            subitem.attr('category', toCategory);
+                        });
+                    }
+                }
+
+
                 item.attr('group', inGroup || null);
             },
 
