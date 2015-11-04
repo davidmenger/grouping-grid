@@ -1,4 +1,4 @@
-# Draggable and grouping able data grid
+# Draggable and grouping data grid
 
 Try the mockup there: [davidmenger.github.io/grouping-grid](http://davidmenger.github.io/grouping-grid/)
 
