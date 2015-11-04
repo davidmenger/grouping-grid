@@ -166,8 +166,8 @@ Mover.prototype = {
 
             this._offset = {
                 containerTop: containerOffset.top,
-                x: event.clientX - ( ( elementOffset.left - containerOffset.left ) - document.body.scrollLeft),
-                y: event.clientY - ( ( elementOffset.top - containerOffset.top ) - document.body.scrollTop),
+                x: event.clientX - ( ( elementOffset.left - containerOffset.left ) - document.documentElement.scrollLeft),
+                y: event.clientY - ( ( elementOffset.top - containerOffset.top ) - document.documentElement.scrollTop),
             };
 
             var containerWidth = this.$container.width();
@@ -184,11 +184,11 @@ Mover.prototype = {
             this.$element.trigger('drag-started', { he: 1 });
         }
 
-        var absCursorY = event.clientY + document.body.scrollTop - this._offset.y;
+        var absCursorY = event.clientY + document.documentElement.scrollTop - this._offset.y;
 
         this._movingContainer.css({
             top: absCursorY + 'px',
-            left: ( event.clientX + document.body.scrollLeft - this._offset.x) + 'px'
+            left: ( event.clientX + document.documentElement.scrollLeft - this._offset.x) + 'px'
         });
 
         this._processCurrentCoordinate(absCursorY);
@@ -401,7 +401,7 @@ Mover.prototype = {
     },
 
     _getTrUnderCoordinate: function (y) {
-        var y = y + this._offset.containerTop - document.body.scrollTop;
+        var y = y + this._offset.containerTop - document.documentElement.scrollTop;
         var $elem = can.$( document.elementFromPoint( this._containerBounds.xAxis, y ) );
         return this._fillMetaInfo( $elem.closest('.tr', this.$container) );
     },
